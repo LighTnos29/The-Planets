@@ -216,25 +216,46 @@ const throttledWheel = throttle((e) => {
 // Add wheel event listener
 window.addEventListener('wheel', throttledWheel);
 
-// Mobile touch support
+// Enhanced mobile touch support
 let touchStartY = 0;
 let touchEndY = 0;
+let isTouching = false;
 
 function handleTouchStart(e) {
+    // Avoid interfering with navigation menu touches
+    if (e.target.closest('nav') || e.target.closest('#mobile-menu')) {
+        return;
+    }
+    
+    isTouching = true;
     touchStartY = e.touches[0].clientY;
 }
 
 function handleTouchMove(e) {
-    e.preventDefault(); // Prevent scrolling
+    if (!isTouching) return;
+    
+    // Only prevent default if we're not in the navigation area
+    if (!e.target.closest('nav') && !e.target.closest('#mobile-menu')) {
+        e.preventDefault(); // Prevent scrolling
+    }
 }
 
 function handleTouchEnd(e) {
+    if (!isTouching) return;
+    
+    // Avoid interfering with navigation menu touches
+    if (e.target.closest('nav') || e.target.closest('#mobile-menu')) {
+        isTouching = false;
+        return;
+    }
+    
     touchEndY = e.changedTouches[0].clientY;
     handleSwipe();
+    isTouching = false;
 }
 
 function handleSwipe() {
-    const swipeThreshold = 50; // Minimum distance for swipe
+    const swipeThreshold = 30; // Reduced threshold for easier swiping
     const deltaY = touchStartY - touchEndY;
     
     if (Math.abs(deltaY) > swipeThreshold) {
@@ -248,12 +269,17 @@ function handleSwipe() {
     }
 }
 
-// Add touch event listeners
-canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+// Add touch event listeners to the entire document for better mobile support
+if (isMobile) {
+    document.addEventListener('touchstart', handleTouchStart, { passive: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd, { passive: true });
+    
+    // Also add wheel event for mobile browsers that support it
+    document.addEventListener('wheel', throttledWheel, { passive: true });
+}
 
-// Mobile menu functionality
+// Mobile menu functionality and navigation buttons
 document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -268,6 +294,22 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
                 mobileMenu.classList.add('hidden');
             }
+        });
+    }
+    
+    // Mobile navigation buttons
+    const prevPlanetBtn = document.getElementById('prev-planet');
+    const nextPlanetBtn = document.getElementById('next-planet');
+    
+    if (prevPlanetBtn) {
+        prevPlanetBtn.addEventListener('click', () => {
+            rotateToPlanet('prev');
+        });
+    }
+    
+    if (nextPlanetBtn) {
+        nextPlanetBtn.addEventListener('click', () => {
+            rotateToPlanet('next');
         });
     }
 });
