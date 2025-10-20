@@ -279,7 +279,7 @@ if (isMobile) {
     document.addEventListener('wheel', throttledWheel, { passive: true });
 }
 
-// Mobile menu functionality and navigation buttons
+// Mobile menu functionality
 document.addEventListener('DOMContentLoaded', () => {
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -294,22 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
                 mobileMenu.classList.add('hidden');
             }
-        });
-    }
-    
-    // Mobile navigation buttons
-    const prevPlanetBtn = document.getElementById('prev-planet');
-    const nextPlanetBtn = document.getElementById('next-planet');
-    
-    if (prevPlanetBtn) {
-        prevPlanetBtn.addEventListener('click', () => {
-            rotateToPlanet('prev');
-        });
-    }
-    
-    if (nextPlanetBtn) {
-        nextPlanetBtn.addEventListener('click', () => {
-            rotateToPlanet('next');
         });
     }
 });
