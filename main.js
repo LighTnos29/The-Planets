@@ -54,7 +54,17 @@ loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
 // Scene setup
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 9;
+
+// Detect mobile device
+const isMobile = window.innerWidth <= 768;
+
+// Adjust camera position for mobile
+if (isMobile) {
+    camera.position.z = 7.5; // Further back to show more of the scene
+    camera.position.y = 0.2; // Slightly adjusted view
+} else {
+    camera.position.z = 9; // Default desktop position
+}
 
 // Renderer setup
 const canvas = document.querySelector('canvas');
@@ -72,9 +82,10 @@ loader.load("https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/4k/moonlit_golf_4
     scene.environment = texture;
 });
 
-let radius = 1.3
-let segments = 64
-let orbitRadius = 4.5
+// Adjust sizes for mobile vs desktop
+let radius = isMobile ? 1.1 : 1.3; // Slightly smaller planets on mobile
+let segments = isMobile ? 32 : 64; // Fewer segments on mobile for performance
+let orbitRadius = isMobile ? 4.0 : 4.5; // Adjusted orbit for mobile
 const textures = ["./csilla/color.png", "./earth/map.jpg", "./venus/map.jpg", "./volcanic/color.png"]
 
 // Planet data with names and descriptions
@@ -138,7 +149,12 @@ for (let i = 0; i < 4; i++) {
     spheres.add(sphere);
 }
 spheres.rotation.x = 0.1
-spheres.position.y = -0.8
+// Adjust positioning for mobile vs desktop
+if (isMobile) {
+    spheres.position.y = -0.3; // Higher position on mobile for better visibility
+} else {
+    spheres.position.y = -0.8; // Default desktop position
+}
 scene.add(spheres);
 
 // Function to update planet name and description in HTML
@@ -199,6 +215,62 @@ const throttledWheel = throttle((e) => {
 
 // Add wheel event listener
 window.addEventListener('wheel', throttledWheel);
+
+// Mobile touch support
+let touchStartY = 0;
+let touchEndY = 0;
+
+function handleTouchStart(e) {
+    touchStartY = e.touches[0].clientY;
+}
+
+function handleTouchMove(e) {
+    e.preventDefault(); // Prevent scrolling
+}
+
+function handleTouchEnd(e) {
+    touchEndY = e.changedTouches[0].clientY;
+    handleSwipe();
+}
+
+function handleSwipe() {
+    const swipeThreshold = 50; // Minimum distance for swipe
+    const deltaY = touchStartY - touchEndY;
+    
+    if (Math.abs(deltaY) > swipeThreshold) {
+        if (deltaY > 0) {
+            // Swipe up - next planet
+            rotateToPlanet('next');
+        } else {
+            // Swipe down - previous planet
+            rotateToPlanet('prev');
+        }
+    }
+}
+
+// Add touch event listeners
+canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+// Mobile menu functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    }
+});
 
 // Initialize planet info on load
 updatePlanetInfo();

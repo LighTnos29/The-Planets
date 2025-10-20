@@ -167,3 +167,54 @@ canvas {
   opacity: 0;
   transition: opacity 1s ease-out;
 }
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Prevent horizontal scrolling */
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Optimize canvas for mobile */
+  canvas {
+    touch-action: none;
+  }
+  
+  /* Improve text readability on mobile */
+  h1 {
+    line-height: 1.1;
+  }
+  
+  p {
+    line-height: 1.5;
+  }
+  
+  /* Optimize star animations for mobile performance */
+  .star {
+    will-change: opacity, transform;
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .star {
+    animation: none;
+  }
+  
+  .animate-pulse {
+    animation: none;
+  }
+  
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* High DPI displays optimization */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
